@@ -1,0 +1,42 @@
+{% include 'admin_header.html' %}
+<form method="POST">
+    <div class="mb-2">
+        <label>Subject</label>
+        <select name="subject_id" class="form-control" required>
+            {% for s in subjects %}
+            <option value="{{ s.id }}" {% if schedule and s.id==schedule.subject_id %}selected{% endif %}>
+                {{ s.code }} - {{ s.title }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-2">
+        <label>Semester</label>
+        <select name="semester" class="form-control" required>
+            <option value="1st" {% if schedule and schedule.semester=='1st' %}selected{% endif %}>1st</option>
+            <option value="2nd" {% if schedule and schedule.semester=='2nd' %}selected{% endif %}>2nd</option>
+        </select>
+    </div>
+    <div class="mb-2">
+        <label>Day</label>
+        <input type="text" name="day" class="form-control" value="{{ schedule.day if schedule else '' }}" required>
+    </div>
+    <div class="mb-2">
+        <label>Time Start</label>
+        <input type="time" name="time_start" class="form-control" value="{{ schedule.time_start if schedule else '' }}" required>
+    </div>
+    <div class="mb-2">
+        <label>Time End</label>
+        <input type="time" name="time_end" class="form-control" value="{{ schedule.time_end if schedule else '' }}" required>
+    </div>
+    <div class="mb-2">
+        <label>Room</label>
+        <input type="text" name="room" class="form-control" value="{{ schedule.room if schedule else '' }}">
+    </div>
+    <div class="mb-2">
+        <label>Instructor</label>
+        <input type="text" name="instructor" class="form-control" value="{{ schedule.instructor if schedule else '' }}">
+    </div>
+    <button class="btn btn-success">Save</button>
+    <a href="/admin/class-schedules" class="btn btn-secondary">Cancel</a>
+</form>

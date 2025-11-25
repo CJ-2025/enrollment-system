@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {% include 'admin_header.html' %}
+</head>
+<body class="p-4">
+<div class="container">
+
+    {% for role, users in users_by_role.items() %}
+        <div class="mb-5">
+            <h3>{{ role | capitalize }} Accounts</h3>
+            <a href="/admin/users/add?role={{ role }}" class="btn btn-success mb-2">Add {{ role | capitalize }}</a>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        {% if role == 'student' %}
+                            <th>Full Name</th>
+                        {% else %}
+                            <th>Role</th>
+                        {% endif %}
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            {% if role == 'student' %}
+                                <td>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</td>
+                            {% else %}
+                                <td>{{ user.role }}</td>
+                            {% endif %}
+                            <td>
+                                <a href="/admin/users/edit/{{ user.id }}" class="btn btn-primary btn-sm">Edit</a>
+                                <a href="/admin/users/delete/{{ user.id }}" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+</div>
+</body>
+</html>
