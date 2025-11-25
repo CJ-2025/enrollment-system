@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Schedules{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h2>Class Schedules</h2>
+  <a href="{{ url_for('add_schedule') }}" class="btn btn-primary">Add Schedule</a>
+</div>
+
+<table class="table table-sm">
+  <thead><tr>
+    <th>Subject</th>
+    <th>Section</th>
+    <th>Day</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Room</th>
+    <th>Instructor</th>
+    <th>Actions</th>
+  </tr></thead>
+
+  <tbody>
+    {% for s in schedules %}
+    <tr>
+      <td>{{ s.subject_code }} - {{ s.subject_title }}</td>
+      <td>{{ s.section }}</td>
+      <td>{{ s.day }}</td>
+      <td>{{ s.time_start }}</td>
+      <td>{{ s.time_end }}</td>
+      <td>{{ s.room }}</td>
+      <td>{{ s.instructor }}</td>
+      <td>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_schedule', id=s.id) }}">Edit</a>
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('delete_schedule', id=s.id) }}" onclick="return confirm('Delete schedule?')">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Add Schedule{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h2>Add Schedule</h2>
+  <a href="{{ url_for('admin_schedules') }}" class="btn btn-link">Back</a>
+</div>
+
+<form method="post" class="card p-3">
+
+  <div class="mb-3">
+    <label class="form-label">Subject</label>
+    <select name="subject_id" class="form-select" required>
+      <option value="">-- Select Subject --</option>
+      {% for sub in subjects %}
+      <option value="{{ sub.id }}">{{ sub.code }} - {{ sub.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Section Name</label>
+    <input name="section" class="form-control" required>
+  </div>
+
+  <div class="row g-2">
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Day</label>
+      <input name="day" class="form-control" placeholder="e.g. Monday" required>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Start Time</label>
+      <input name="time_start" type="time" class="form-control" required>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label class="form-label">End Time</label>
+      <input name="time_end" type="time" class="form-control" required>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Room</label>
+    <input name="room" class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Instructor</label>
+    <input name="instructor" class="form-control">
+  </div>
+
+  <button class="btn btn-success">Save</button>
+
+</form>
+{% endblock %}

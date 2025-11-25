@@ -1,21 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Select Role</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body class="text-center p-5 bg-light">
-
-<h2>Select Your Role</h2>
-
-<div class="container mt-4">
-
-    <a href="/login?role=admin" class="btn btn-primary btn-lg m-2">Admin</a>
-    <a href="/login?role=registrar" class="btn btn-success btn-lg m-2">Registrar</a>
-    <a href="/login?role=cashier" class="btn btn-warning btn-lg m-2">Cashier</a>
-    <a href="/login?role=student" class="btn btn-info btn-lg m-2">Student</a>
-
+{% extends "base.html" %}
+{% block title %}Choose Role{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        <h2 class="card-title mb-3">Welcome to the Enrollment System</h2>
+        <p class="text-muted">Choose your role to continue</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+          <a href="{{ url_for('login') }}?role=student" class="btn btn-outline-primary">Student Login</a>
+          <a href="{{ url_for('login') }}?role=admin" class="btn btn-outline-secondary">Admin Login</a>
+          <a href="{{ url_for('login') }}?role=registrar" class="btn btn-outline-success">Registrar Login</a>
+          <a href="{{ url_for('login') }}?role=cashier" class="btn btn-outline-warning">Cashier Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Student Enroll{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h2>Enroll</h2>
+  <a href="{{ url_for('student_dashboard') }}" class="btn btn-link">Back</a>
+</div>
+
+<form method="post" class="card p-3">
+  <div class="mb-3">
+    <label class="form-label">Program</label>
+    <select name="program_id" class="form-select" required>
+      <option value="">-- Select Program --</option>
+      {% for p in programs %}
+      <option value="{{ p.id }}">{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Year Level</label>
+    <input name="year_level" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Semester</label>
+    <select name="semester" class="form-select" required>
+      <option value="1st">1st</option>
+      <option value="2nd">2nd</option>
+      <option value="summer">Summer</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">School Year</label>
+    <input name="school_year" class="form-control" placeholder="e.g. 2025-2026" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Select Subjects</label>
+    <select name="subjects" multiple class="form-select">
+      <!-- The backend currently does not supply subjects to this template.
+           You can populate this select via JavaScript/fetch from an endpoint,
+           or modify the view to pass subjects. For now it's empty -->
+      <option value="">(Select subjects — admin must populate or update template)</option>
+    </select>
+    <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple subjects.</div>
+  </div>
+
+  <button class="btn btn-success">Submit Enrollment</button>
+</form>
+{% endblock %}
