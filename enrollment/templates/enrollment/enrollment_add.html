@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Add Enrollment{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Add Enrollment</h2>
+
+<form method="post" class="card p-4 bg-white">
+
+    <div class="mb-3">
+        <label class="form-label">Student</label>
+        <select name="student_id" class="form-select" required>
+            <option value="">Select student</option>
+            {% for s in students %}
+            <option value="{{ s.id }}">{{ s.last_name }}, {{ s.first_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Program</label>
+            <select name="program_id" class="form-select" required>
+                <option value="">Select program</option>
+                {% for p in programs %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Year Level</label>
+            <select name="year_level" class="form-select" required>
+                <option value="">Select</option>
+                {% for y in range(1,5) %}
+                <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Semester</label>
+            <select name="semester" class="form-select">
+                <option value="1st">1st</option>
+                <option value="2nd">2nd</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn btn-primary">Save</button>
+    <a href="{{ url_for('admin_enrollments') }}" class="btn btn-secondary">Cancel</a>
+
+</form>
+
+{% endblock %}

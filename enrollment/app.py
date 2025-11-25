@@ -501,6 +501,7 @@ def add_schedule():
         subject_id = request.form["subject_id"]
         section = request.form["section"]
         day = request.form["day"]
+        semester = request.form["semester"]
         time_start = request.form["time_start"]
         time_end = request.form["time_end"]
         room = request.form["room"]
@@ -508,9 +509,9 @@ def add_schedule():
 
         cur.execute("""
             INSERT INTO class_schedules 
-            (subject_id, section, day, time_start, time_end, room, instructor)
-            VALUES (%s,%s,%s,%s,%s,%s,%s)
-        """, (subject_id, section, day, time_start, time_end, room, instructor))
+            (subject_id, section, day, semester, time_start, time_end, room, instructor)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (subject_id, section, day, semester, time_start, time_end, room, instructor))
         conn.commit()
         conn.close()
         return redirect("/admin/schedules")
@@ -532,6 +533,7 @@ def edit_schedule(id):
         subject_id = request.form["subject_id"]
         section = request.form["section"]
         day = request.form["day"]
+        semester = request.form["semester"]
         time_start = request.form["time_start"]
         time_end = request.form["time_end"]
         room = request.form["room"]
@@ -539,10 +541,10 @@ def edit_schedule(id):
 
         cur.execute("""
             UPDATE class_schedules 
-            SET subject_id=%s, section=%s, day=%s, time_start=%s, 
+            SET subject_id=%s, section=%s, day=%s, semester=%s, time_start=%s, 
                 time_end=%s, room=%s, instructor=%s
             WHERE id=%s
-        """, (subject_id, section, day, time_start, time_end, room, instructor, id))
+        """, (subject_id, section, day, semester, time_start, time_end, room, instructor, id))
         conn.commit()
         conn.close()
         return redirect("/admin/schedules")
@@ -640,46 +642,105 @@ def student_dashboard():
     conn.close()
 
     return render_template("student_dashboard.html", student=student, title="Student Dashboard")
-
-@app.route("/student/enroll", methods=["GET", "POST"])
+# STEP 1 — STUDENT SELECTS SECTION
+@app.route("/student/enroll")
 def student_enroll():
-    if session.get("role") != "student":
-        return redirect("/login")
+    if "role" not in session or session["role"] != "student":
+        return "Access Denied", 403
+    
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("SELECT DISTINCT section FROM class_schedules ORDER BY section")
+    sections = cur.fetchall()
+
+    conn.close()
+    return render_template("enrollment/enrollment_list.html", sections=sections)  # <- changed
+
+# STEP 2 — DISPLAY SUBJECTS IN SECTION
+@app.route("/student/enroll/<section>")
+def student_enroll_section(section):
+    if "role" not in session or session["role"] != "student":
+        return "Access Denied", 403
+    
+    student_id = session["student_id"]
 
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
 
-    cur.execute("SELECT * FROM programs")
-    programs = cur.fetchall()
+    cur.execute("""
+        SELECT cs.id AS schedule_id, s.id AS subject_id,
+               s.code, s.title, s.units, s.prerequisite_id
+        FROM class_schedules cs
+        JOIN subjects s ON cs.subject_id = s.id
+        WHERE cs.section = %s
+    """, (section,))
+    subjects = cur.fetchall()
 
-    if request.method == "POST":
-        program_id = request.form["program_id"]
-        year_level = request.form["year_level"]
-        semester = request.form["semester"]
-        school_year = request.form["school_year"]
-        selected_subjects = request.form.getlist("subjects")
+    cur.execute("SELECT subject_id FROM student_completed_subjects WHERE student_id = %s", (student_id,))
+    completed = {row["subject_id"] for row in cur.fetchall()}
 
-        cur.execute("UPDATE students SET program_id=%s, year_level=%s WHERE id=%s",
-                    (program_id, year_level, session["student_id"]))
-
-        cur.execute("""
-            INSERT INTO enrollments (student_id, semester, school_year, status)
-            VALUES (%s, %s, %s, 'pending')
-        """, (session["student_id"], semester, school_year))
-        enrollment_id = cur.lastrowid
-
-        for sid in selected_subjects:
-            cur.execute("""
-                INSERT INTO enrollment_subjects (enrollment_id, subject_id)
-                VALUES (%s, %s)
-            """, (enrollment_id, sid))
-
-        conn.commit()
-        conn.close()
-        return "Enrollment submitted and pending approval!"
+    for subj in subjects:
+        prereq = subj["prerequisite_id"]
+        subj["blocked"] = prereq and prereq not in completed
 
     conn.close()
-    return render_template("enrollment/student_enroll.html", programs=programs)
+    return render_template("enrollment/enrollment_subjects.html", section=section, subjects=subjects)  # <- changed
+
+# STEP 3 — SUBMIT & SAVE ENROLLMENT
+@app.route("/student/enroll/submit", methods=["POST"])
+def student_enroll_submit():
+    if "role" not in session or session["role"] != "student":
+        return "Access Denied", 403
+
+    student_id = session["student_id"]
+    section = request.form["section"]
+    selected_subjects = request.form.getlist("subject_ids")
+
+    if not selected_subjects:
+        return "No subjects selected"
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO enrollments (student_id, section) VALUES (%s, %s)", (student_id, section))
+    enrollment_id = cur.lastrowid
+
+    for subject_id in selected_subjects:
+        cur.execute("INSERT INTO enrollment_subjects (enrollment_id, subject_id) VALUES (%s, %s)",
+                    (enrollment_id, subject_id))
+
+    conn.commit()
+    conn.close()
+    return redirect("/student/enrolled")
+
+# VIEW ENROLLED SUBJECTS
+@app.route("/student/enrolled")
+def student_enrolled():
+    if "role" not in session or session["role"] != "student":
+        return "Access Denied", 403
+
+    student_id = session["student_id"]
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("SELECT id, section FROM enrollments WHERE student_id = %s ORDER BY id DESC LIMIT 1", (student_id,))
+    enrollment = cur.fetchone()
+
+    if not enrollment:
+        return render_template("enrollment/enrollment_view.html", enrolled=[], section=None)  # <- changed
+
+    cur.execute("""
+        SELECT es.id, s.code, s.title, s.units
+        FROM enrollment_subjects es
+        JOIN subjects s ON es.subject_id = s.id
+        WHERE es.enrollment_id = %s
+    """, (enrollment["id"],))
+
+    enrolled_subjects = cur.fetchall()
+    conn.close()
+    return render_template("enrollment/enrollment_view.html", enrolled=enrolled_subjects, section=enrollment["section"])
 
 # ----------------------------------
 # LOGOUT

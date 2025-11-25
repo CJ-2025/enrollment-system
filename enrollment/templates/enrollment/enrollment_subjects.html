@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Select Subjects{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Select Subjects for Enrollment</h2>
+
+<form method="post" class="card p-3 bg-white">
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Select</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Units</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for sub in subjects %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="subject_ids" value="{{ sub.id }}">
+                </td>
+                <td>{{ sub.code }}</td>
+                <td>{{ sub.description }}</td>
+                <td>{{ sub.units }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+    {% if subjects|length == 0 %}
+    <p class="text-muted">No subjects available for this program/year level.</p>
+    {% endif %}
+
+    <button class="btn btn-primary mt-3">Save Selected</button>
+    <a href="{{ url_for('admin_enrollments') }}" class="btn btn-secondary mt-3">Cancel</a>
+
+</form>
+
+{% endblock %}

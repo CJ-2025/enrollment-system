@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Enrollments{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h2>Enrollments</h2>
+    <a href="{{ url_for('admin_add_enrollment') }}" class="btn btn-primary">Add Enrollment</a>
+</div>
+
+<table class="table table-bordered table-hover bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Student</th>
+            <th>Program</th>
+            <th>Year</th>
+            <th>Semester</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for enr in enrollments %}
+        <tr>
+            <td>{{ enr.id }}</td>
+            <td>{{ enr.student_name }}</td>
+            <td>{{ enr.program_name }}</td>
+            <td>{{ enr.year_level }}</td>
+            <td>{{ enr.semester }}</td>
+            <td>
+                <a href="{{ url_for('admin_view_enrollment', id=enr.id) }}" class="btn btn-sm btn-info">View</a>
+                <a href="{{ url_for('admin_edit_enrollment', id=enr.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{{ url_for('admin_delete_enrollment', id=enr.id) }}"
+                   class="btn btn-sm btn-danger"
+                   onclick="return confirm('Delete this enrollment?')">
+                   Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if enrollments|length == 0 %}
+<p class="text-center text-muted">No enrollments found.</p>
+{% endif %}
+
+{% endblock %}
