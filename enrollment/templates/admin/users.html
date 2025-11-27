@@ -1,0 +1,201 @@
+{% extends "admin/admin_sidebar.html" %}
+{% block content %}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .container-box {
+        width: 100%;
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 5px;
+        box-shadow: 0 2px 7px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    h2 {
+        margin-top: 25px;
+        font-size: 20px;
+        color: #444;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        color: white;
+        font-size: 14px;
+    }
+
+    .btn-edit { background: #f1c40f; color: black; }
+    .btn-delete { background: #e74c3c; }
+    .btn-add { background: #2ecc71; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    th {
+        background: #f0f0f0;
+        text-align: left;
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    .role-section {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+        background: #fafafa;
+    }
+</style>
+
+<div class="container-box">
+
+    <h1>User Accounts</h1>
+
+    <a href="/admin/users/add" class="btn btn-add">+ Add User</a>
+
+    <!-- ADMIN USERS -->
+    <div class="role-section">
+        <h2>Admin</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th class="center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users_by_role['admin'] %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td class="center">
+                        <a href="/admin/users/edit/{{ user.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/admin/users/delete/{{ user.id }}" class="btn btn-delete"
+                           onclick="return confirm('Delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="center small">No admin users.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- REGISTRAR USERS -->
+    <div class="role-section">
+        <h2>Registrar</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th class="center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users_by_role['registrar'] %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td class="center">
+                        <a href="/admin/users/edit/{{ user.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/admin/users/delete/{{ user.id }}" class="btn btn-delete"
+                           onclick="return confirm('Delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="center small">No registrar users.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CASHIER USERS -->
+    <div class="role-section">
+        <h2>Cashier</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th class="center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users_by_role['cashier'] %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td class="center">
+                        <a href="/admin/users/edit/{{ user.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/admin/users/delete/{{ user.id }}" class="btn btn-delete"
+                           onclick="return confirm('Delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="center small">No cashier users.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- STUDENT USERS -->
+    <div class="role-section">
+        <h2>Students</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th class="center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users_by_role['student'] %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td class="center">
+                        <a href="/admin/users/edit/{{ user.id }}" class="btn btn-edit">Edit</a>
+                        <a href="/admin/users/delete/{{ user.id }}" class="btn btn-delete"
+                           onclick="return confirm('Delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="center small">No student users.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

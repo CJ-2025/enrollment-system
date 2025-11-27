@@ -1,0 +1,29 @@
+{% extends "admin/admin_sidebar.html" %}
+{% block content %}
+<div class="container">
+
+    <h1>Edit User</h1>
+
+    <form action="/admin/users/edit/{{ user.id }}" method="POST">
+
+        <label>Username</label>
+        <input type="text" name="username" value="{{ user.username }}" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Leave blank to keep current password">
+
+        <label>Role</label>
+        <select name="role" required>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="registrar" {% if user.role == 'registrar' %}selected{% endif %}>Registrar</option>
+            <option value="cashier" {% if user.role == 'cashier' %}selected{% endif %}>Cashier</option>
+            <option value="student" {% if user.role == 'student' %}selected{% endif %}>Student</option>
+        </select>
+
+        <button class="btn-submit" type="submit">Update User</button>
+
+        <a href="/admin/users" class="back">← Back to User List</a>
+
+    </form>
+</div>
+{% endblock %}

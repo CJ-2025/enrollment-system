@@ -1,0 +1,39 @@
+{% extends "admin/admin_sidebar.html" %}
+
+{% block content %}
+<h2>Subjects</h2>
+<a href="/admin/subjects/add" class="btn btn-primary mb-3">Add Subject</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Units</th>
+            <th>Program</th>
+            <th>Year Level</th>
+            <th>Semester</th>
+            <th>Prerequisite</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for s in subjects %}
+        <tr>
+            <td>{{ s.id }}</td>
+            <td>{{ s.code }}</td>
+            <td>{{ s.title }}</td>
+            <td>{{ s.units }}</td>
+            <td>{{ s.program_name }}</td>
+            <td>{{ s.year_level }}</td>
+            <td>{{ s.semester }}</td>
+            <td>{{ s.prereq_title or '-' }}</td>
+            <td>
+                <a href="/admin/subjects/edit/{{ s.id }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="/admin/subjects/delete/{{ s.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete subject?')">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

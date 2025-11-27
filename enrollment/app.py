@@ -572,11 +572,81 @@ def delete_schedule(id):
 # REGISTRAR ROUTES
 # ----------------------------------
 
+# ----------------------------------
+# REGISTRAR DASHBOARD
+# ----------------------------------
 @app.route("/registrar/dashboard")
 def registrar_dashboard():
     if "role" not in session or session["role"] != "registrar":
         return "Access Denied", 403
-    return render_template("dashboard_registrar.html")
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    # Get all students with latest enrollment status
+    cur.execute("""
+        SELECT s.id AS student_id,
+               s.first_name, s.middle_name, s.last_name,
+               e.id AS enrollment_id,
+               e.status
+        FROM students s
+        LEFT JOIN enrollments e ON e.student_id = s.id
+        ORDER BY s.last_name, s.first_name
+    """)
+    students = cur.fetchall()
+
+    conn.close()
+    return render_template("Registrar/dashboard_registrar.html", students=students)
+@app.route("/registrar/student/<int:student_id>")
+def registrar_view_student(student_id):
+    if "role" not in session or session["role"] != "registrar":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    # Get student details
+    cur.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+    student = cur.fetchone()
+
+    # Get student active enrollment
+    cur.execute("SELECT * FROM enrollments WHERE student_id = %s", (student_id,))
+    enrollment = cur.fetchone()
+
+    subjects = []
+    schedule = []
+
+    if enrollment:
+        # enrolled subjects
+        cur.execute("""
+            SELECT es.id, subj.code, subj.title, subj.units
+            FROM enrollment_subjects es
+            JOIN subjects subj ON es.subject_id = subj.id
+            WHERE es.enrollment_id = %s
+        """, (enrollment["id"],))
+        subjects = cur.fetchall()
+
+        # class schedule for each subject
+        cur.execute("""
+            SELECT cs.*, subj.code, subj.title
+            FROM class_schedules cs
+            JOIN subjects subj ON cs.subject_id = subj.id
+            WHERE subj.id IN (
+                SELECT subject_id FROM enrollment_subjects WHERE enrollment_id = %s
+            )
+            ORDER BY cs.day, cs.time_start
+        """, (enrollment["id"],))
+        schedule = cur.fetchall()
+
+    conn.close()
+    return render_template(
+        "Registrar/view_student.html",
+        student=student,
+        enrollment=enrollment,
+        subjects=subjects,
+        schedule=schedule
+    )
+
 
 @app.route("/registrar/enrollments")
 def registrar_enrollments():
@@ -595,19 +665,20 @@ def registrar_enrollments():
     conn.close()
     return render_template("enrollment/registrar_enrollments.html", enrollments=enrollments)
 
-@app.route("/registrar/enrollments/validate/<int:enroll_id>/<string:action>")
-def validate_enrollment(enroll_id, action):
-    if session.get("role") != "registrar":
+@app.route("/registrar/validate/<int:enrollment_id>")
+def registrar_validate_enrollment(enrollment_id):
+    if "role" not in session or session["role"] != "registrar":
         return "Access Denied", 403
-
-    status = "approved" if action == "approve" else "rejected"
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE enrollments SET status=%s WHERE id=%s", (status, enroll_id))
+
+    cur.execute("UPDATE enrollments SET status = 'validated' WHERE id = %s", (enrollment_id,))
     conn.commit()
     conn.close()
-    return redirect("/registrar/enrollments")
+
+    return redirect("/registrar/dashboard")
+
 
 # ----------------------------------
 # CASHIER ROUTES
@@ -643,19 +714,39 @@ def student_dashboard():
 
     return render_template("student_dashboard.html", student=student, title="Student Dashboard")
 # STEP 1 — STUDENT SELECTS SECTION
-@app.route("/student/enroll")
+@app.route("/student/enroll", methods=["GET", "POST"])
 def student_enroll():
     if "role" not in session or session["role"] != "student":
         return "Access Denied", 403
-    
+
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
 
-    cur.execute("SELECT DISTINCT section FROM class_schedules ORDER BY section")
-    sections = cur.fetchall()
+    # Load programs for dropdown
+    cur.execute("SELECT * FROM programs")
+    programs = cur.fetchall()
+
+    if request.method == "POST":
+        student_id = session["student_id"]
+        program_id = request.form["program_id"]
+        year_level = request.form["year_level"]
+        semester = request.form["semester"]
+        school_year = request.form["school_year"]
+        notes = request.form["notes"]
+
+        cur.execute("""
+            INSERT INTO enrollment_requests 
+            (student_id, program_id, year_level, semester, school_year, notes)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (student_id, program_id, year_level, semester, school_year, notes))
+
+        conn.commit()
+        conn.close()
+        return redirect("/student/dashboard")
 
     conn.close()
-    return render_template("enrollment/enrollment_list.html", sections=sections)  # <- changed
+    return render_template("Student/enroll.html", programs=programs)
+
 
 # STEP 2 — DISPLAY SUBJECTS IN SECTION
 @app.route("/student/enroll/<section>")

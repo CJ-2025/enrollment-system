@@ -1,0 +1,53 @@
+{% extends "admin/admin_sidebar.html" %}
+
+{% block content %}
+<h2>Add Subject</h2>
+<form method="POST" class="mt-3">
+    <div class="mb-3">
+        <label>Code:</label>
+        <input type="text" name="code" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Title:</label>
+        <input type="text" name="title" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Units:</label>
+        <input type="number" name="units" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Program:</label>
+        <select name="program_id" class="form-select" required>
+            <option value="">Select Program</option>
+            {% for p in programs %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Year Level:</label>
+        <input type="number" name="year_level" class="form-control" min="1" max="5" required>
+    </div>
+    <div class="mb-3">
+        <label>Semester:</label>
+        <select name="semester" class="form-select" required>
+            <option value="">Select Semester</option>
+            <option value="1st">1st</option>
+            <option value="2nd">2nd</option>
+            <option value="Summer">Summer</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Prerequisite (optional):</label>
+        <select name="prerequisite_id" class="form-select">
+            <option value="">None</option>
+            {% for s in all_subjects %}
+                <option value="{{ s.id }}">{{ s.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="/admin/subjects" class="btn btn-secondary">Back</a>
+</form>
+{% endblock %}
+

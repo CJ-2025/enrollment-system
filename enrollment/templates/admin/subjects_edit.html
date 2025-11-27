@@ -1,0 +1,50 @@
+{% extends "admin/admin_sidebar.html" %}
+
+{% block content %}
+<h2>Edit Subject</h2>
+<form method="POST" class="mt-3">
+    <div class="mb-3">
+        <label>Code:</label>
+        <input type="text" name="code" class="form-control" value="{{ subject.code }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Title:</label>
+        <input type="text" name="title" class="form-control" value="{{ subject.title }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Units:</label>
+        <input type="number" name="units" class="form-control" value="{{ subject.units }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Program:</label>
+        <select name="program_id" class="form-select" required>
+            {% for p in programs %}
+                <option value="{{ p.id }}" {% if p.id == subject.program_id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Year Level:</label>
+        <input type="number" name="year_level" class="form-control" min="1" max="5" value="{{ subject.year_level }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Semester:</label>
+        <select name="semester" class="form-select" required>
+            <option value="1st" {% if subject.semester=="1st" %}selected{% endif %}>1st</option>
+            <option value="2nd" {% if subject.semester=="2nd" %}selected{% endif %}>2nd</option>
+            <option value="Summer" {% if subject.semester=="Summer" %}selected{% endif %}>Summer</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Prerequisite (optional):</label>
+        <select name="prerequisite_id" class="form-select">
+            <option value="">None</option>
+            {% for s in all_subjects %}
+                <option value="{{ s.id }}" {% if s.id == subject.prerequisite_id %}selected{% endif %}>{{ s.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Update</button>
+    <a href="/admin/subjects" class="btn btn-secondary">Back</a>
+</form>
+{% endblock %}

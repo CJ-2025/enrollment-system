@@ -1,0 +1,29 @@
+{% extends "admin/admin_sidebar.html" %}
+
+{% block content %}
+<h2>Programs</h2>
+<a href="/admin/programs/add" class="btn btn-primary">Add Program</a>
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in programs %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.code }}</td>
+            <td>{{ p.name }}</td>
+            <td>
+                <a href="/admin/programs/edit/{{ p.id }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="/admin/programs/delete/{{ p.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete program?')">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
