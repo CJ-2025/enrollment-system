@@ -1,0 +1,49 @@
+{% extends "admin/admin_sidebar.html" %}
+{% block content %}
+<h3>Add Class Schedule</h3>
+<form method="POST">
+    <div class="mb-3">
+        <label>Subject</label>
+        <select name="subject_id" class="form-select" required>
+            <option value="">Select Subject</option>
+            {% for s in subjects %}
+                <option value="{{ s.id }}">{{ s.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Semester</label>
+        <input type="text" name="semester" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Day</label>
+        <input type="text" name="day" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Time Start</label>
+        <input type="time" name="time_start" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Time End</label>
+        <input type="time" name="time_end" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Room</label>
+        <input type="text" name="room" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label>Instructor</label>
+        <select name="instructor_id" class="form-select">
+            <option value="">Select Instructor</option>
+            {% for inst in instructors %}
+                <option value="{{ inst.id }}">{{ inst.last_name }}, {{ inst.first_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Section</label>
+        <input type="text" name="section" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Add Schedule</button>
+</form>
+{% endblock %}

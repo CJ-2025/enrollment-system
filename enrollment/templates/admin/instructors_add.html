@@ -1,0 +1,27 @@
+{% extends "admin/admin_sidebar.html" %}
+{% block content %}
+<h3>Add Instructor</h3>
+<form method="POST">
+    <div class="mb-3">
+        <label>First Name</label>
+        <input type="text" name="first_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Middle Name</label>
+        <input type="text" name="middle_name" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label>Last Name</label>
+        <input type="text" name="last_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Contact</label>
+        <input type="text" name="contact" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Add Instructor</button>
+</form>
+{% endblock %}

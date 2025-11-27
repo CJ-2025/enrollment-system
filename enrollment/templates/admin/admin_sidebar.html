@@ -20,8 +20,12 @@
       background:#212529; color:#fff; padding-top:20px;
       top:0; left:0;
     }
-    .sidebar a { color:#adb5bd; padding:12px 18px; display:block; text-decoration:none; }
-    .sidebar a:hover { background:#343a40; color:#fff; }
+    .sidebar a {
+      color:#adb5bd; padding:12px 18px; display:block; text-decoration:none;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background:#343a40; color:#fff;
+    }
 
     .main { margin-left:240px; padding:24px; }
 
@@ -38,13 +42,29 @@
   <div class="sidebar d-flex flex-column">
     <h5 class="text-center mb-3">Admin Panel</h5>
 
-    <a href="/admin/dashboard"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+    <a href="/admin/dashboard" class="{% if request.path == '/admin/dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2 me-2"></i> Dashboard
+    </a>
 
     {% if session['role'] == 'admin' %}
-      <a href="/admin/users"><i class="bi bi-people me-2"></i> User Management</a>
-      <a href="/admin/students"><i class="bi bi-list-ul me-2"></i> Student List</a>
-      <a href="/admin/programs"><i class="bi bi-book me-2"></i> Programs</a>
-      <a href="/admin/subjects"><i class="bi bi-journal-bookmark me-2"></i> Subjects</a>
+      <a href="/admin/users" class="{% if '/admin/users' in request.path %}active{% endif %}">
+        <i class="bi bi-people me-2"></i> User Management
+      </a>
+      <a href="/admin/students" class="{% if '/admin/students' in request.path %}active{% endif %}">
+        <i class="bi bi-list-ul me-2"></i> Student List
+      </a>
+      <a href="/admin/programs" class="{% if '/admin/programs' in request.path %}active{% endif %}">
+        <i class="bi bi-book me-2"></i> Programs
+      </a>
+      <a href="/admin/subjects" class="{% if '/admin/subjects' in request.path %}active{% endif %}">
+        <i class="bi bi-journal-bookmark me-2"></i> Subjects
+      </a>
+      <a href="/admin/instructors" class="{% if '/admin/instructors' in request.path %}active{% endif %}">
+        <i class="bi bi-person-badge me-2"></i> Instructors
+      </a>
+      <a href="/admin/class_schedules" class="{% if '/admin/class_schedules' in request.path %}active{% endif %}">
+        <i class="bi bi-calendar2-week me-2"></i> Class Schedules
+      </a>
     {% endif %}
 
     <div class="mt-auto p-3">
@@ -52,7 +72,7 @@
     </div>
   </div>
 
-  <!-- MAIN PAGE CONTENT inserted here -->
+  <!-- MAIN PAGE CONTENT -->
   <div class="main">
     {% block content %}{% endblock %}
   </div>

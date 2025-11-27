@@ -1,0 +1,35 @@
+{% extends "admin/admin_sidebar.html" %}
+{% block content %}
+<h3>Instructors</h3>
+<a href="/admin/instructors/add" class="btn btn-primary mb-3">Add Instructor</a>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for inst in instructors %}
+        <tr>
+            <td>{{ inst.id }}</td>
+            <td>{{ inst.last_name }}</td>
+            <td>{{ inst.first_name }}</td>
+            <td>{{ inst.middle_name or "" }}</td>
+            <td>{{ inst.contact or "" }}</td>
+            <td>{{ inst.email or "" }}</td>
+            <td>
+                <a href="/admin/instructors/edit/{{ inst.id }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="/admin/instructors/delete/{{ inst.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this instructor?')">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

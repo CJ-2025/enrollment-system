@@ -218,57 +218,81 @@ def admin_students():
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)
 
-    # Fetch students with program info
+    # Fetch students with program name
     cur.execute("""
-        SELECT s.id,
-               s.student_id,
-               CONCAT(s.last_name, ', ', s.first_name, ' ', s.middle_name) AS full_name,
-               p.name AS program,
-               s.year_level,
-               s.created_at AS date
+        SELECT s.id, s.student_id, s.first_name, s.last_name, s.middle_name,
+               s.birthdate, s.address, s.contact, s.year_level, s.created_at,
+               p.name AS program_name, p.id AS program_id
         FROM students s
         LEFT JOIN programs p ON s.program_id = p.id
         ORDER BY s.id DESC
     """)
     students = cur.fetchall()
 
-    # Fetch all programs for filter dropdown
-    cur.execute("SELECT name FROM programs ORDER BY name")
-    all_programs = [row["name"] for row in cur.fetchall()]
+    # Fetch program id + name for dropdowns
+    cur.execute("SELECT id, name FROM programs ORDER BY name")
+    all_programs = cur.fetchall()
 
     conn.close()
 
-    return render_template(
-        "admin/students.html",
-        students=students,
-        all_programs=all_programs
-    )
+    return render_template("admin/students.html",
+                           students=students,
+                           all_programs=all_programs)
 
-
+# ----------------------------------
+# ADMIN - STUDENT CRUD
+# ----------------------------------
 @app.route("/admin/students/add", methods=["POST"])
 def admin_add_student():
     if session.get("role") != "admin":
         return "Access Denied", 403
-    name = request.form["name"]
-    course = request.form["course"]
+
+    student_id = request.form["student_id"]
+    first_name = request.form["first_name"]
+    middle_name = request.form.get("middle_name")
+    last_name = request.form["last_name"]
+    birthdate = request.form.get("birthdate")  # format YYYY-MM-DD
+    address = request.form.get("address")
+    contact = request.form.get("contact")
+    program_id = request.form["program_id"]
+    year_level = request.form.get("year_level") or 1
+    user_id = session.get("user_id")  # optional: who created the record
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO students (name, course, created_at) VALUES (%s, %s, NOW())", (name, course))
+    cur.execute("""
+        INSERT INTO students
+        (student_id, first_name, middle_name, last_name, birthdate, address, contact, program_id, year_level, user_id, created_at)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+    """, (student_id, first_name, middle_name, last_name, birthdate, address, contact, program_id, year_level, user_id))
     conn.commit()
     conn.close()
     return redirect("/admin/students")
 
-# STUDENTS: Edit (POST)
+
 @app.route("/admin/students/edit/<int:id>", methods=["POST"])
 def admin_edit_student(id):
     if session.get("role") != "admin":
         return "Access Denied", 403
-    name = request.form["name"]
-    course = request.form["course"]
+
+    student_id = request.form["student_id"]
+    first_name = request.form["first_name"]
+    middle_name = request.form.get("middle_name")
+    last_name = request.form["last_name"]
+    birthdate = request.form.get("birthdate")  # format YYYY-MM-DD
+    address = request.form.get("address")
+    contact = request.form.get("contact")
+    program_id = request.form["program_id"]
+    year_level = request.form.get("year_level") or 1
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE students SET name=%s, course=%s WHERE id=%s", (name, course, id))
+    cur.execute("""
+        UPDATE students
+        SET student_id=%s, first_name=%s, middle_name=%s, last_name=%s,
+            birthdate=%s, address=%s, contact=%s, program_id=%s, year_level=%s
+        WHERE id=%s
+    """, (student_id, first_name, middle_name, last_name, birthdate, address, contact, program_id, year_level, id))
     conn.commit()
     conn.close()
     return redirect("/admin/students")
@@ -523,7 +547,199 @@ def admin_delete_subject(id):
     conn.close()
     return redirect("/admin/subjects")
 
+# ---------------------------
+# INSTRUCTOR CRUD
+# ---------------------------
+@app.route("/admin/instructors")
+def admin_instructors():
+    if session.get("role") != "admin":
+        return "Access Denied", 403
 
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM instructors ORDER BY last_name, first_name")
+    instructors = cur.fetchall()
+    conn.close()
+    return render_template("admin/instructors.html", instructors=instructors)
+
+
+@app.route("/admin/instructors/add", methods=["GET","POST"])
+def admin_add_instructor():
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    if request.method=="POST":
+        first_name = request.form["first_name"]
+        middle_name = request.form.get("middle_name")
+        last_name = request.form["last_name"]
+        contact = request.form.get("contact")
+        email = request.form.get("email")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO instructors (first_name, middle_name, last_name, contact, email) VALUES (%s,%s,%s,%s,%s)",
+            (first_name, middle_name, last_name, contact, email)
+        )
+        conn.commit()
+        conn.close()
+        return redirect("/admin/instructors")
+
+    return render_template("admin/instructors_add.html")
+
+
+@app.route("/admin/instructors/edit/<int:id>", methods=["GET","POST"])
+def admin_edit_instructor(id):
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    if request.method=="POST":
+        first_name = request.form["first_name"]
+        middle_name = request.form.get("middle_name")
+        last_name = request.form["last_name"]
+        contact = request.form.get("contact")
+        email = request.form.get("email")
+
+        cur.execute(
+            "UPDATE instructors SET first_name=%s, middle_name=%s, last_name=%s, contact=%s, email=%s WHERE id=%s",
+            (first_name, middle_name, last_name, contact, email, id)
+        )
+        conn.commit()
+        conn.close()
+        return redirect("/admin/instructors")
+
+    cur.execute("SELECT * FROM instructors WHERE id=%s", (id,))
+    instructor = cur.fetchone()
+    conn.close()
+    return render_template("admin/instructors_edit.html", instructor=instructor)
+
+
+@app.route("/admin/instructors/delete/<int:id>")
+def admin_delete_instructor(id):
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM instructors WHERE id=%s", (id,))
+    conn.commit()
+    conn.close()
+    return redirect("/admin/instructors")
+
+# ---------------------------
+# CLASS SCHEDULE CRUD
+# ---------------------------
+@app.route("/admin/class_schedules")
+def admin_class_schedules():
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT cs.*, s.title AS subject_title, p.name AS program_name,
+               i.first_name, i.last_name
+        FROM class_schedules cs
+        LEFT JOIN subjects s ON cs.subject_id = s.id
+        LEFT JOIN programs p ON s.program_id = p.id
+        LEFT JOIN instructors i ON cs.instructor_id = i.id
+        ORDER BY cs.semester, cs.day, cs.time_start
+    """)
+    schedules = cur.fetchall()
+    conn.close()
+    return render_template("admin/class_schedules.html", schedules=schedules)
+
+
+@app.route("/admin/class_schedules/add", methods=["GET","POST"])
+def admin_add_class_schedule():
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    # Fetch subjects and instructors for dropdowns
+    cur.execute("SELECT id, title FROM subjects ORDER BY title")
+    subjects = cur.fetchall()
+    cur.execute("SELECT id, first_name, last_name FROM instructors ORDER BY last_name, first_name")
+    instructors = cur.fetchall()
+
+    if request.method=="POST":
+        subject_id = request.form["subject_id"]
+        semester = request.form["semester"]
+        day = request.form["day"]
+        time_start = request.form["time_start"]
+        time_end = request.form["time_end"]
+        room = request.form["room"]
+        instructor_id = request.form.get("instructor_id") or None
+        section = request.form["section"]
+
+        cur.execute("""
+            INSERT INTO class_schedules (subject_id, semester, day, time_start, time_end, room, instructor_id, section)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (subject_id, semester, day, time_start, time_end, room, instructor_id, section))
+        conn.commit()
+        conn.close()
+        return redirect("/admin/class_schedules")
+
+    conn.close()
+    return render_template("admin/class_schedules_add.html", subjects=subjects, instructors=instructors)
+
+
+@app.route("/admin/class_schedules/edit/<int:id>", methods=["GET","POST"])
+def admin_edit_class_schedule(id):
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor(dictionary=True)
+
+    # Fetch subjects and instructors for dropdowns
+    cur.execute("SELECT id, title FROM subjects ORDER BY title")
+    subjects = cur.fetchall()
+    cur.execute("SELECT id, first_name, last_name FROM instructors ORDER BY last_name, first_name")
+    instructors = cur.fetchall()
+
+    if request.method=="POST":
+        subject_id = request.form["subject_id"]
+        semester = request.form["semester"]
+        day = request.form["day"]
+        time_start = request.form["time_start"]
+        time_end = request.form["time_end"]
+        room = request.form["room"]
+        instructor_id = request.form.get("instructor_id") or None
+        section = request.form["section"]
+
+        cur.execute("""
+            UPDATE class_schedules
+            SET subject_id=%s, semester=%s, day=%s, time_start=%s, time_end=%s,
+                room=%s, instructor_id=%s, section=%s
+            WHERE id=%s
+        """, (subject_id, semester, day, time_start, time_end, room, instructor_id, section, id))
+        conn.commit()
+        conn.close()
+        return redirect("/admin/class_schedules")
+
+    cur.execute("SELECT * FROM class_schedules WHERE id=%s", (id,))
+    schedule = cur.fetchone()
+    conn.close()
+    return render_template("admin/class_schedules_edit.html", schedule=schedule, subjects=subjects, instructors=instructors)
+
+
+@app.route("/admin/class_schedules/delete/<int:id>")
+def admin_delete_class_schedule(id):
+    if session.get("role") != "admin":
+        return "Access Denied", 403
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM class_schedules WHERE id=%s", (id,))
+    conn.commit()
+    conn.close()
+    return redirect("/admin/class_schedules")
 
 # ----------------------------------
 # LOGOUT
